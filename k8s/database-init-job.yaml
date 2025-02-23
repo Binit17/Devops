@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-init
+spec:
+  backoffLimit: 4
+  template:
+    metadata:
+      labels:
+        app: database-init
+    spec:
+      containers:
+      - name: database-init
+        image: database-init:latest
+        imagePullPolicy: Never
+        env:
+        - name: MONGODB_URI
+          value: "mongodb://mongodb:27017/bookdb"
+      restartPolicy: Never
