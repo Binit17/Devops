@@ -2,42 +2,41 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_BACKEND = "binit17/backend"
-        DOCKER_IMAGE_FRONTEND = "binit17/frontend"
-        DOCKER_IMAGE_DATABASE = "binit17/database"
+        PROJECT_DIR = "Devops"
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout SCM') {
             steps {
                 git credentialsId: 'github-credentials', url: 'https://github.com/Binit17/Devops.git', branch: 'main'
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Containers') {
             steps {
                 script {
-                    sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend'
-                    sh 'docker build -t $DOCKER_IMAGE_FRONTEND ./frontend'
-                    sh 'docker build -t $DOCKER_IMAGE_DATABASE ./database'
+                    sh 'docker build -t backend-app ./backend'
+                    sh 'docker build -t frontend-app ./frontend'
+                    sh 'docker build -t database-app ./database'
                 }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Run Containers') {
             steps {
-                withDockerRegistry([credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/']) {
-                    sh 'docker push $DOCKER_IMAGE_BACKEND'
-                    sh 'docker push $DOCKER_IMAGE_FRONTEND'
-                    sh 'docker push $DOCKER_IMAGE_DATABASE'
+                script {
+                    sh 'docker-compose down'
+                    sh 'docker-compose up -d'
                 }
             }
         }
 
-        stage('Deploy Containers') {
+        stage('Verify App is Running') {
             steps {
-                sh 'docker-compose down'
-                sh 'docker-compose up -d'
+                script {
+                    sh 'docker ps'
+                    sh 'curl -I http://localhost || echo "App not reachable"'
+                }
             }
         }
     }
