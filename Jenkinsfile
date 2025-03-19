@@ -13,9 +13,9 @@ pipeline {
         stage('Install Ansible') {
             steps {
                 sh '''
-                    apt-get update
-                    apt-get install -y ansible
-                    ansible-galaxy collection install community.docker
+                    sudo apt-get update
+                    sudo apt-get install -y ansible
+                    sudo ansible-galaxy collection install community.docker
                 '''
             }
         }
