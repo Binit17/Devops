@@ -1,0 +1,18 @@
+---
+- name: Deploy Application
+  hosts: local
+  become: no
+  
+  tasks:
+    - name: Build and deploy with docker-compose
+      community.docker.docker_compose:
+        project_src: "{{ playbook_dir }}/.."
+        state: present
+      
+    - name: Verify services are running
+      shell: docker ps
+      register: container_status
+      
+    - name: Show running containers
+      debug:
+        var: container_status.stdout_lines
