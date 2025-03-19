@@ -10,22 +10,13 @@ pipeline {
             }
         }
         
-        stage('Install Ansible') {
-            steps {
-                sh '''
-                    sudo apt-get update
-                    sudo apt-get install -y ansible
-                    sudo ansible-galaxy collection install community.docker
-                '''
-            }
-        }
-        
         stage('Deploy with Ansible') {
             steps {
-                sh '''
-                    cd ${WORKSPACE}
-                    ansible-playbook ansible/deploy.yml
-                '''
+                ansiblePlaybook(
+                    playbook: "${WORKSPACE}/ansible/deploy.yml",
+                    inventory: "${WORKSPACE}/ansible/inventory.ini",
+                    colorized: true
+                )
             }
         }
     }
