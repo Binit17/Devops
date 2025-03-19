@@ -1,42 +1,31 @@
 pipeline {
     agent any
-
     environment {
         PROJECT_DIR = "Devops"
     }
-
     stages {
         stage('Checkout SCM') {
             steps {
                 git credentialsId: 'github-credentials', url: 'https://github.com/Binit17/Devops.git', branch: 'main'
             }
         }
-
-        stage('Build Containers') {
+        
+        stage('Install Ansible') {
             steps {
-                script {
-                    sh 'docker build -t backend-app ./backend'
-                    sh 'docker build -t frontend-app ./frontend'
-                    sh 'docker build -t database-app ./database'
-                }
+                sh '''
+                    apt-get update
+                    apt-get install -y ansible
+                    ansible-galaxy collection install community.docker
+                '''
             }
         }
-
-        stage('Run Containers') {
+        
+        stage('Deploy with Ansible') {
             steps {
-                script {
-                    sh 'docker-compose down'
-                    sh 'docker-compose up -d'
-                }
-            }
-        }
-
-        stage('Verify App is Running') {
-            steps {
-                script {
-                    sh 'docker ps'
-                    sh 'curl -I http://localhost || echo "App not reachable"'
-                }
+                sh '''
+                    cd ${WORKSPACE}
+                    ansible-playbook ansible/deploy.yml
+                '''
             }
         }
     }
